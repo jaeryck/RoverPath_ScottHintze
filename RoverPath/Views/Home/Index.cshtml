@@ -1,0 +1,172 @@
+﻿@{
+	ViewBag.Title = "RoverPath Test Page";
+}
+
+<div class="jumbotron">
+	<h1>Welcome to RoverPath</h1>
+	<p class="lead">RoverPath allows the user to test movement sequence commands for the upcoming Mars rovers.</p>
+</div>
+
+@using (Html.BeginForm())
+{
+	<div class="row">
+		<div class="col-md-4">
+			<h2>Inputs</h2>
+			<div class="mb-3">
+				<label for="gridSizeInput" class="form-label">Grid Size</label>
+				<input class="form-control" id="gridSizeInput" placeholder="X Y" aria-describedby="gridSizeHelp" required>
+				<div id="gridSizeHelp" class="form-text">Enter X Y coordinates of north east corner. Example: 5 5 </div>
+			</div>
+			<div class="mb-3">
+				<label for="rover1PositionInput" class="form-label">Rover 1 Position and Heading</label>
+				<input class="form-control positionInput" id="rover1PositionInput" placeholder="X Y Z" aria-describedby="rover1PositionHelp" required>
+				<div id="rover1PositionHelp" class="form-text">Enter X Y Z coordinates of rover 1. Example: 2 3 N</div>
+			</div>
+			<div class="mb-3">
+				<label for="rover1MovementInput" class="form-label">Rover 1 Movement Sequence</label>
+				<input class="form-control sequenceInput" id="rover1MovementInput" placeholder="LRMLRM..." aria-describedby="rover1MovementHelp">
+				<div id="rover1MovementHelp" class="form-text">Enter movement sequence of rover 1.</div>
+			</div>
+			<div class="mb-3">
+				<label for="rover2PositionInput" class="form-label">Rover 2 Position and Heading</label>
+				<input class="form-control positionInput" id="rover2PositionInput" placeholder="X Y Z" aria-describedby="rover2PositionHelp" required>
+				<div id="rover2PositionHelp" class="form-text">Enter X Y Z coordinates of rover 2. Example: 5 4 W</div>
+			</div>
+			<div class="mb-3">
+				<label for="rover2MovementInput" class="form-label">Rover 2 Movement Sequence</label>
+				<input class="form-control sequenceInput" id="rover2MovementInput" placeholder="LRMLRM..." aria-describedby="rover2MovementHelp">
+				<div id="rover2MovementHelp" class="form-text">Enter movement sequence of rover 2.</div>
+			</div>
+			<button type="submit" class="btn btn-primary">Submit</button><label style="padding-left: 5px; font-weight: bold;" id="validateMessage"></label>
+		</div>
+		<div class="col-md-8">
+			<h2>Sequence Result</h2>
+			<h3 class="text-center">North</h3>
+			<table class="table-bordered" id="roverSequenceTable">
+				<tr>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td class="rover1"><img src="~/Content/IMages/rover1-TopView.png" class="rover1" /></td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+					<td class="rover2"><img src="~/Content/IMages/rover2-TopView.png" class="rover2" /></td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+				</tr>
+
+			</table>
+			<h3 class="text-center">South</h3>
+		</div>
+	</div>
+}
+
+@section scripts
+	{
+	<script>
+		$(document).ready(function () {
+
+		});
+
+		$('form').submit(function (event) {
+			event.preventDefault();
+			event.stopPropagation();
+			var validated = true;
+			var gridValidate = new RegExp(/^[0-9]+[ ][0-9]+$/);
+			var positionValidate = new RegExp(/^[0-9]+[ ][0-9]+[ ][NSEW]$/);
+			var sequenceValidate = new RegExp(/^[LRM]+$|^$/);
+
+			if (!gridValidate.test($('#gridSizeInput').val())) {
+				$('#gridSizeInput').addClass('border-danger');
+				validated = false;
+				$('#validateMessage').addClass('text-danger');
+				$('#validateMessage').html('Please correct the grid size input.');
+			}
+			else {
+				$('#gridSizeInput').removeClass('border-danger');
+			}
+
+			var gridX = $('#gridSizeInput').val().split(' ')[0];
+			var gridY = $('#gridSizeInput').val().split(' ')[1];
+
+			$.each($('.positionInput'), function (index, input) {
+				if (!positionValidate.test($(input).val().toUpperCase())) {
+					$(input).addClass('border-danger');
+					validated = false;
+					$('#validateMessage').addClass('text-danger');
+					$('#validateMessage').html('Please correct the position input.');
+				}
+				else if ($(input).val().split(' ')[0] > gridX || $(input).val().split(' ')[1] > gridY) {
+					$(input).addClass('border-danger');
+					validated = false;
+					$('#validateMessage').addClass('text-danger');
+					$('#validateMessage').html('The input position is outside the grid bounds.');
+				}
+				else {
+					$(input).removeClass('border-danger');
+				}
+			});
+
+			$.each($('.sequenceInput'), function (index, input) {
+				if (!sequenceValidate.test($(input).val().toUpperCase())) {
+					$(input).addClass('border-danger');
+					validated = false;
+					$('#validateMessage').addClass('text-danger');
+					$('#validateMessage').html('Please correct the movement sequence input.');
+				}
+				else {
+					$(input).removeClass('border-danger');
+				}
+			});
+
+			if (!validated) {
+				return;
+			}
+			else {
+				$('#validateMessage').removeClass('text-danger');
+				$('#validateMessage').html('');
+				//todo: ajax call to get json data for grid movement
+				$.ajax({
+					url: '@Url.Action("MoveRover")',
+					type: 'POST',
+					dataType: 'json',
+					contentType: 'application/json',
+					data: JSON.stringify({ gridSize: $('#gridSizeInput').val(), rover1Start: $('#rover1PositionInput').val().toUpperCase(), rover1Sequence: $('#rover1MovementInput').val().toUpperCase(), rover2Start: $('#rover2PositionInput').val().toUpperCase(), rover2Sequence: $('#rover2MovementInput').val().toUpperCase() }),
+					success: function (result) {
+						console.log(result);
+					},
+					error: function (xhr, status, error) {
+
+					}
+				});
+
+				//alert('Submit!');
+			}
+		});
+
+	</script>
+}
