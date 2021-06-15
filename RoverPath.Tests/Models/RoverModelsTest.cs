@@ -12,4 +12,9 @@ namespace RoverPath.Tests.Models
 
 
 	}
+
+	class GridTest
+	{
+
+	}
 }
