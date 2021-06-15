@@ -26,26 +26,26 @@ namespace RoverPath.Tests.Controllers
 		}
 
 		[TestMethod]
-		public void About()
+		public void Requirements()
 		{
 			// Arrange
 			HomeController controller = new HomeController();
 
 			// Act
-			ViewResult result = controller.About() as ViewResult;
+			ViewResult result = controller.Requirements() as ViewResult;
 
 			// Assert
-			Assert.AreEqual("Your application description page.", result.ViewBag.Message);
+			Assert.IsNotNull(result);
 		}
 
 		[TestMethod]
-		public void Contact()
+		public void ProgramLogic()
 		{
 			// Arrange
 			HomeController controller = new HomeController();
 
 			// Act
-			ViewResult result = controller.Contact() as ViewResult;
+			ViewResult result = controller.ProgramLogic() as ViewResult;
 
 			// Assert
 			Assert.IsNotNull(result);
