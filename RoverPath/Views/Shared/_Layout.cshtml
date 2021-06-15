@@ -10,8 +10,20 @@
 <body>
 	<nav class="navbar fixed-top navbar-dark bg-dark">
 		<div class="container-fluid">
-			<span class="navbar-brand">NASA RoverPath Test</span>
+			<a href='@Url.Action("Index")' class="navbar-brand">NASA RoverPath Test</a>
+			<ul class="nav">
+				<li class="nav-item">
+					<a href='@Url.Action("Requirements")' class="nav-link">Requirements</a>
+				</li>
+				<li class="nav-item">
+					<a href='@Url.Action("ProgramLogic")' class="nav-link">Program Logic</a>
+				</li>
+			</ul>
+			
+			
 		</div>
+		
+
 	</nav>
 	<div class="container body-content">
 		@RenderBody()

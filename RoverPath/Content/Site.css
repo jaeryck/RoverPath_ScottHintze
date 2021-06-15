@@ -38,3 +38,8 @@ td {
   width: 100px;
   height: 100px;
 }
+
+.nav-link {
+  color: white;
+  font-weight: bold;
+}

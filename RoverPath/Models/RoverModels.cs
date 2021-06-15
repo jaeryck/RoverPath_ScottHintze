@@ -9,7 +9,7 @@ namespace RoverPath.Models
 {
 	public class RoverModels
 	{
-		
+		public int RoverNumber { get; set; }
 	}
 
 	public class Heading
@@ -50,17 +50,15 @@ namespace RoverPath.Models
 				throw new GridException(string.Format("The grid coordinate(s) {0} is/are invalid.", badCoords.TrimEnd(',')));
 			}
 
-			//since the grid is 0-based, the "size" is actually x-1;
-			GridX = gridInput.GetX() - 1;
-			//since the grid is 0-based, the "size" is actually y-1;
-			GridY = gridInput.GetY() - 1;
+			GridX = gridInput.GetX();
+			GridY = gridInput.GetY();
 		}
 	}
 
 	/// <summary>
 	/// The RoverPosition class contains the input rover position and heading.
 	/// </summary>
-	public class RoverPosition
+	public class RoverPosition : RoverModels
 	{
 		public int RoverX { get; set; }
 		public int RoverY { get; set; }
@@ -68,7 +66,7 @@ namespace RoverPath.Models
 
 		private int headingDegrees { get; set; }
 
-		public RoverPosition(string positionInput)
+		public RoverPosition(string positionInput, int roverNumber)
 		{
 			var positionCheck = positionInput.RegexMatch(@"^[0-9]+[ ][0-9]+[ ][NSEW]$");
 			if (!positionCheck.Success)
@@ -81,26 +79,27 @@ namespace RoverPath.Models
 						badCoords += coordMatch.Value + " ";
 					}
 				}
-				throw new PositionException(string.Format("The position coordinate(s) {0} is/are invalid or exceed(s) the input grid size.", badCoords.TrimEnd(',')));
+				throw new PositionException(string.Format("The position coordinate(s) {0} for rover {1} is/are invalid or exceed(s) the input grid size.", badCoords.TrimEnd(','), roverNumber));
 			}
 
+			RoverNumber = roverNumber;
 			RoverX = positionInput.GetX();
 			RoverY = positionInput.GetY();
 			RoverHeading = positionInput.GetZ();
 			headingDegrees = RoverHeading.GetDegreesByCardinal();
 		}
 
-		public void Move(string sequence, string gridInput, RoverPosition occupiedSpace)
+		public void Move(string sequence, string gridInput, Rover occupiedSpace)
 		{
 			//modify the position properties based on the input command and current heading. S, E = -1, N, W = +1
-			if (!ValidateSequence(sequence))
+			if (!ValidateSequence(sequence, RoverNumber))
 				return;
 
 			var grid = new Grid(gridInput);
 			for (int i = 0; i < sequence.Length; i++)
 			{
 				string command = sequence[i].ToString();
-				var newPosition = new RoverPosition(string.Format("{0} {1} {2}", RoverX, RoverY, RoverHeading));
+				var newPosition = new RoverPosition(string.Format("{0} {1} {2}", RoverX, RoverY, RoverHeading), RoverNumber);
 				switch (command.ToString())
 				{
 					case "L":
@@ -114,22 +113,22 @@ namespace RoverPath.Models
 						{
 							case 0:
 								if (RoverY + 1 > grid.GridY)
-									throw new SequenceException(string.Format("The sequence command {0} at position {1} exceeds the Northern grid boundary.", command, i + 1));
+									throw new SequenceException(string.Format("The rover {0} sequence command {1} at position {2} exceeds the Northern grid boundary.", RoverNumber, command, i + 1));
 								newPosition.RoverY++;
 								break;
 							case 90:
 								if (RoverX + 1 > grid.GridX)
-									throw new SequenceException(string.Format("The sequence command {0} at position {1} exceeds the Eastern grid boundary.", command, i + 1));
+									throw new SequenceException(string.Format("The rover {0} sequence command {1} at position {2} exceeds the Eastern grid boundary.", RoverNumber, command, i + 1));
 								newPosition.RoverX++;
 								break;
 							case 180:
 								if (RoverY - 1 < 0)
-									throw new SequenceException(string.Format("The sequence command {0} at position {1} exceeds the Southern grid boundary.", command, i + 1));
+									throw new SequenceException(string.Format("The rover {0} sequence command {1} at position {2} exceeds the Southern grid boundary.", RoverNumber, command, i + 1));
 								newPosition.RoverY--;
 								break;
 							case 270:
 								if (RoverX - 1 < 0)
-									throw new SequenceException(string.Format("The sequence command {0} at position {1} exceeds the Western grid boundary.", command, i + 1));
+									throw new SequenceException(string.Format("The rover {0} sequence command {1} at position {2} exceeds the Western grid boundary.", RoverNumber, command, i + 1));
 								newPosition.RoverX--;
 								break;
 							default:
@@ -139,7 +138,7 @@ namespace RoverPath.Models
 					default:
 						break;
 				}
-				if (newPosition.RoverX != occupiedSpace.RoverX && newPosition.RoverY != occupiedSpace.RoverY)
+				if (string.Format("{0}{1}", newPosition.RoverX, newPosition.RoverY) != string.Format("{0}{1}", occupiedSpace.Position.RoverX, occupiedSpace.Position.RoverY))
 				{
 					RoverX = newPosition.RoverX;
 					RoverY = newPosition.RoverY;
@@ -148,14 +147,12 @@ namespace RoverPath.Models
 				}
 				else
 				{
-					throw new PositionException(string.Format("The sequence command {0} at index {1} will occupy the same current position as the other rover.", command, i + 1));
+					throw new PositionException(string.Format("The rover {0} sequence command {1} at index {2} will occupy the same current position as the other rover.", RoverNumber, command, i + 1));
 				}
 			}
-
-			RoverHeading = headingDegrees.GetCardinalByDegrees();
 		}
 
-		private bool ValidateSequence(string sequenceInput)
+		private bool ValidateSequence(string sequenceInput, int roverNumber)
 		{
 			var sequenceCheck = sequenceInput.RegexMatch(@"^[LRM]+$|^$");
 			if (!sequenceCheck.Success)
@@ -168,7 +165,7 @@ namespace RoverPath.Models
 						badCommands += commandMatch.Value + " ";
 					}
 				}
-				throw new SequenceException(string.Format("The sequence command(s) {0} is/are invalid or exceed(s) the input grid size.", badCommands.TrimEnd(',')));
+				throw new SequenceException(string.Format("The rover {0} sequence command(s) {1} is/are invalid or exceed(s) the input grid size.", roverNumber, badCommands.TrimEnd(',')));
 			}
 			return true;
 		}
@@ -186,6 +183,7 @@ namespace RoverPath.Models
 		{
 			RoverNumber = roverNumber;
 			Position = intialPosition;
+			Position.RoverNumber = RoverNumber;
 		}
 	}
 }
