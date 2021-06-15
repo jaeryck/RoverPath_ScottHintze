@@ -143,6 +143,7 @@
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\bootstrap.rtl.css" />
     <Content Include="Content\bootstrap.rtl.min.css" />
+    <Content Include="Content\Documentation\RoverPath Logic Flow.svg" />
     <Content Include="Content\Images\PIA02406.png" />
     <Content Include="Content\Images\rover1-TopView.png" />
     <Content Include="Content\Images\rover2-TopView.png" />
@@ -155,6 +156,9 @@
     <Content Include="Scripts\bootstrap.esm.min.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
+    <Content Include="Content\Documentation\Development_Candidate_Coding_Test_v5_20210218.pdf" />
+    <Content Include="Content\Documentation\RoverPath Logic Flow.vsd" />
+    <Content Include="Content\Documentation\RoverPath Requirements.odt" />
     <None Include="Scripts\jquery-3.6.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.6.0.js" />
     <Content Include="Scripts\jquery-3.6.0.min.js" />
